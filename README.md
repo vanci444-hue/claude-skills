@@ -18,7 +18,7 @@ Publishing them here doubles as:
 
 ## Features
 
-Three working skills:
+Four working skills:
 
 ### `doc-to-notes`
 Turns a course document (`.docx`, `.pdf`) or a video transcript into a structured Markdown note, then files it into my Obsidian vault. Triggered by phrases like "整理成笔记" or by simply being handed a document.
@@ -29,12 +29,19 @@ Converts a video transcript into a publish-ready long-form article in my writing
 ### `khazix-writer`
 A style-imitation skill for long-form WeChat articles in the voice of [数字生命卡兹克](https://mp.weixin.qq.com/). Useful as a reference for how to encode a detailed authorial voice as a Claude skill.
 
+### `feishu-whiteboard-draw`
+Turns structured content into a **native, editable whiteboard diagram inside a Feishu (Lark) doc** — mind maps, flowcharts, architecture diagrams, swimlanes, relationship graphs, timelines. The guarantee: nodes are real editable objects (shape and text are one piece), not a flat SVG image and not "box + floating text" layers. Captures the hard-won gotchas of embedding whiteboards in Feishu docs (fake block ids, blank boards that won't insert, seeding a mermaid board to obtain a writable token, SVG = static image) plus a native-node recipe, color palette, and a ready-to-use mind-map template. Depends on `lark-cli` + `@larksuite/whiteboard-cli`.
+
 ## Project Structure
 
 ```
 .
 ├── doc-to-notes/
 │   └── SKILL.md
+├── feishu-whiteboard-draw/
+│   ├── SKILL.md
+│   ├── references/
+│   └── templates/
 ├── khazix-writer/
 │   ├── SKILL.md
 │   └── references/

@@ -1,0 +1,87 @@
+{
+  "version": 2,
+  "nodes": [
+    {
+      "type": "frame",
+      "id": "root",
+      "layout": "dagre",
+      "gap": 24,
+      "padding": 40,
+      "fillColor": "#FFFFFF",
+      "borderColor": "#E9ECEF",
+      "borderWidth": 1,
+      "borderRadius": 16,
+      "layoutOptions": {
+        "rankdir": "LR",
+        "nodesep": 24,
+        "ranksep": 90,
+        "edges": [
+          ["center", "base"],
+          ["center", "core"],
+          ["center", "drive"],
+          ["base", "memory"],
+          ["core", "empathy"],
+          ["core", "persona"],
+          ["drive", "proactive"],
+          ["drive", "exclusive"]
+        ]
+      },
+      "children": [
+        {
+          "type": "rect", "id": "center", "width": 190, "height": "fit-content",
+          "fillColor": "#5F3DC4", "borderColor": "#5F3DC4", "borderWidth": 2, "borderRadius": 14,
+          "textColor": "#FFFFFF", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "陪伴需求\n", "bold": true, "fontSize": 18 }, { "content": "关系深度", "fontSize": 12 } ]
+        },
+        {
+          "type": "rect", "id": "base", "width": 170, "height": "fit-content",
+          "fillColor": "#FFFFFF", "borderColor": "#3B5BDB", "borderWidth": 3, "borderRadius": 12,
+          "textColor": "#1C3FAA", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "地基层\n", "bold": true, "fontSize": 15 }, { "content": "关系能否成立", "fontSize": 11 } ]
+        },
+        {
+          "type": "rect", "id": "core", "width": 170, "height": "fit-content",
+          "fillColor": "#FFFFFF", "borderColor": "#E8590C", "borderWidth": 3, "borderRadius": 12,
+          "textColor": "#B34700", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "核心体验层\n", "bold": true, "fontSize": 15 }, { "content": "关系有无温度", "fontSize": 11 } ]
+        },
+        {
+          "type": "rect", "id": "drive", "width": 170, "height": "fit-content",
+          "fillColor": "#FFFFFF", "borderColor": "#2F9E44", "borderWidth": 3, "borderRadius": 12,
+          "textColor": "#1E6B2E", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "关系驱动层\n", "bold": true, "fontSize": 15 }, { "content": "关系能否长久", "fontSize": 11 } ]
+        },
+        {
+          "type": "rect", "id": "memory", "width": 180, "height": "fit-content",
+          "fillColor": "#DBE4FF", "borderColor": "#91A7FF", "borderWidth": 2, "borderRadius": 12,
+          "textColor": "#1C3FAA", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "记忆性\n", "bold": true, "fontSize": 14 }, { "content": "它记得你", "fontSize": 11 } ]
+        },
+        {
+          "type": "rect", "id": "empathy", "width": 180, "height": "fit-content",
+          "fillColor": "#FFE8CC", "borderColor": "#FFC078", "borderWidth": 2, "borderRadius": 12,
+          "textColor": "#B34700", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "共情性\n", "bold": true, "fontSize": 14 }, { "content": "它懂你", "fontSize": 11 } ]
+        },
+        {
+          "type": "rect", "id": "persona", "width": 180, "height": "fit-content",
+          "fillColor": "#FFE8CC", "borderColor": "#FFC078", "borderWidth": 2, "borderRadius": 12,
+          "textColor": "#B34700", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "人格性\n", "bold": true, "fontSize": 14 }, { "content": "它是谁", "fontSize": 11 } ]
+        },
+        {
+          "type": "rect", "id": "proactive", "width": 180, "height": "fit-content",
+          "fillColor": "#D3F9D8", "borderColor": "#8CE99A", "borderWidth": 2, "borderRadius": 12,
+          "textColor": "#1E6B2E", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "主动性\n", "bold": true, "fontSize": 14 }, { "content": "它在乎你", "fontSize": 11 } ]
+        },
+        {
+          "type": "rect", "id": "exclusive", "width": 180, "height": "fit-content",
+          "fillColor": "#D3F9D8", "borderColor": "#8CE99A", "borderWidth": 2, "borderRadius": 12,
+          "textColor": "#1E6B2E", "textAlign": "center", "verticalAlign": "middle",
+          "text": [ { "content": "专属养成\n", "bold": true, "fontSize": 14 }, { "content": "只属于你", "fontSize": 11 } ]
+        }
+      ]
+    }
+  ]
+}
