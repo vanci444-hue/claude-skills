@@ -18,7 +18,7 @@ Publishing them here doubles as:
 
 ## Features
 
-Four working skills:
+Five working skills:
 
 ### `doc-to-notes`
 Turns a course document (`.docx`, `.pdf`) or a video transcript into a structured Markdown note, then files it into my Obsidian vault. Triggered by phrases like "整理成笔记" or by simply being handed a document.
@@ -31,6 +31,9 @@ A style-imitation skill for long-form WeChat articles in the voice of [数字生
 
 ### `feishu-whiteboard-draw`
 Turns structured content into a **native, editable whiteboard diagram inside a Feishu (Lark) doc** — mind maps, flowcharts, architecture diagrams, swimlanes, relationship graphs, timelines. The guarantee: nodes are real editable objects (shape and text are one piece), not a flat SVG image and not "box + floating text" layers. Captures the hard-won gotchas of embedding whiteboards in Feishu docs (fake block ids, blank boards that won't insert, seeding a mermaid board to obtain a writable token, SVG = static image) plus a native-node recipe, color palette, and a ready-to-use mind-map template. Depends on `lark-cli` + `@larksuite/whiteboard-cli`.
+
+### `yh-course-notes`
+Turns a course **ASR transcript** (plus screenshots / slide captures) into a **Feishu (Lark) cloud-doc note**, written with `lark-cli` and styled to match my existing 雅慧 AI-PM course notes. Encodes the block-selection rules I actually use — matrix → table; raw source / numbered SOP / interview-answer → code block (with caption); term → 📖 callout, tip → 💡 callout; parallel points → bold-led `ul/li`; spatial/relational structure → whiteboard (via `feishu-whiteboard-draw`). Keeps English jargon untranslated, strips spoken filler down to the essence, and never overwrites a doc wholesale (block-level edits only, never touches existing whiteboards). Triggered by handing over an Obsidian ASR link and asking to "整理成飞书课程笔记", or `/yh-course-notes`.
 
 ## Project Structure
 
@@ -45,8 +48,11 @@ Turns structured content into a **native, editable whiteboard diagram inside a F
 ├── khazix-writer/
 │   ├── SKILL.md
 │   └── references/
-└── video-to-article/
-    └── SKILL.md
+├── video-to-article/
+│   └── SKILL.md
+└── yh-course-notes/
+    ├── SKILL.md
+    └── references/
 ```
 
 ## Preview / Demo
