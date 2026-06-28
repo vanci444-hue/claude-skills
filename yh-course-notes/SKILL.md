@@ -3,6 +3,7 @@ name: yh-course-notes
 description: |
   Evan 的飞书课程笔记整理 skill（雅慧 AI 产品经理课系列）。当 Evan 给出一个 Obsidian 里的 ASR 转写链接 / 路径（常配一个装课程截图、课件的文件夹），并要"整理成飞书课程笔记""做成飞书笔记""把这节课整理一下""按我的格式整理"时触发。
   产出物是一篇飞书（Lark）云文档笔记，用 lark-cli 写入；需要图时调用 /feishu-whiteboard-draw 画原生可编辑画板。
+  输入按三个槽位给：输出文档链接（必填）、ASR 录音 / 转写（选填）、原始课件（选填）；缺 ASR 或课件就先跟 Evan 要或确认有没有。
   即使 Evan 只丢来一个 ASR 链接说"整理笔记"，只要上下文是把课程转写沉淀成飞书笔记，就触发。触发命令：/yh-course-notes。
 ---
 
@@ -15,28 +16,41 @@ description: |
 
 ---
 
-## 输入物（Evan 会给的）
+## 输入物（三个槽位）
 
-1. **必给：ASR 转写**——Obsidian 里的 `.md` 路径或链接。先用 Read 工具读全文（文件常 1000+ 行，分页读完，别只读开头）。
-2. **常给：素材文件夹**——里面是课程**截图 / 课件 PPT 图**。用 Read 工具逐张看（图片能直接视觉读取），把 ASR 里讲到、但口头说不清的结构补全（很多表格、架构图的准确措辞来自截图）。
-3. **有时给：已有飞书笔记链接**——表示在这篇上**继续补充**，不是新建。先 fetch 现状再增量改（见下方工作流）。
+Evan 每次按三个槽位给料，开工前先对齐齐不齐：
+
+1. **必填：输出文档链接**——飞书 wiki / docx URL，笔记往这里写。**唯一必给项。** 先 fetch 判断是**新建**（空文档 / 只有占位标题）还是**补充已有**（已有正文，见步骤 2）。
+2. **选填：ASR 录音 / 转写**——Obsidian 里的 `.md` 路径或链接。先用 Read 读全文（常 1000+ 行，分页读完，别只读开头）。
+3. **选填：原始课件**——飞书文档 / 截图 / PPT 图（飞书课件常常整篇是截图）。读图链路见下方工作流。
+
+> **缺槽位就主动开口。** 只给了输出链接、没给 ASR 或课件时，**先跟 Evan 要、或确认有没有**，别凭单一源就硬写。课件尤其常被事后补充 / 更新——定稿前再抓一次。
 
 ---
 
 ## 核心工作流
 
+### 0. 对齐槽位
+- 确认三槽位齐不齐；**缺 ASR / 课件就先跟 Evan 要或确认有没有**，别只凭一个源开写。
+
 ### 1. 读源
 - Read ASR 全文（分页读完）。
-- Read 素材文件夹里每张截图 / 课件。
-- 在脑子里对齐：ASR 的口语叙述 ↔ 截图里的结构化信息，互为补充。
+- **读课件截图**（关键，别跳）：飞书课件多为整篇内嵌截图，**Read 打不开远程 authcode 图 URL，必须先下载**：
+  ```bash
+  lark-cli docs +fetch --api-version v2 --doc "<课件URL>" --detail with-ids --doc-format xml   # 拿 <img token="…">
+  lark-cli docs +media-download --token "<img_token>" --output ./kj_img1 --as user             # 下到本地
+  ```
+  再用 Read 逐张看本地 PNG，把 ASR 口头说不清的结构（表格列名、架构层级、准确措辞）补全。
+- **课件会更新**：第一次抓可能是空 / 半成品；**定稿前重新 fetch 一次课件**，别用旧缓存（踩过：漏掉了后补的整块"关键概念"）。
+- 对齐：ASR 口语叙述 ↔ 截图结构化信息，互为补充。
 
 ### 2. 判断"新建"还是"补充已有"
-- **补充已有**（Evan 给了飞书链接）：
+- 拿输出链接 fetch：
   ```bash
-  lark-cli docs +fetch --api-version v2 --doc "<URL>" --detail with-ids --doc-format xml
+  lark-cli docs +fetch --api-version v2 --doc "<输出URL>" --detail with-ids --doc-format xml
   ```
-  拿到全文 + 每个 block 的 `id`。识别已有章节结构、已有 `<whiteboard token=...>`。**画板内容一律不动**（除非 Evan 明确要重画）。然后只做**增量插入**（见步骤 4）。
-- **新建**：用 `docs +create` 或先 `append` 骨架，再逐块填。
+- **空文档 / 只有占位标题** → **新建**：按文档顺序 `append` 逐节填（append 能吃含表格的多块片段）。
+- **已有正文** → **补充已有**：识别已有章节结构、已有 `<whiteboard token=...>`，**画板内容一律不动**（除非 Evan 明确要重画），只做**增量插入**（见步骤 4）。
 
 ### 3. 清洗 + 提炼
 - 删掉所有口语：互动（"扣个一""懂的扣 1""大家懂吗"）、语气词、跑题闲聊、ASR 转写的错别字/谐音。
@@ -102,7 +116,10 @@ description: |
 3. **表格 `<th>/<td>/<tr>` 一律不加 `background-color`。** 深色模式下浅底色看不清。只用 `<b>` 加粗、行内 emoji、谨慎的 `<span text-color>`。颜色由 Evan 自己标。
 4. **列表用原生 `<ul>/<li>`**，不在 `<p>` 里手敲 "• / · / -"。
 5. **这类"听课笔记"默认不套课件模板**（元信息表 + 顶部脑图 + 词汇表）——那是 AIPM 课件卡的格式。除非 Evan 明确要求。
-6. 所有 lark-cli 操作前先读 [`lark-shared`](../lark-shared/SKILL.md)（认证、`--as user`、高风险门禁）。
+6. **所有标题用飞书原生 heading（h1–h9）+ 默认自动序号。** 走飞书自动编号：首个 H1 `seq="1" seq-level="auto"`，其余所有标题 `seq="auto" seq-level="auto"`；**标题文字里绝不手敲「一、/ 1.1」**；层级连续别跳级（H1→H2→H3，子节是二级就用 H2，别 H1 下直接接 H3，否则自动编号会怪）。增量插入的新标题同样带 `seq="auto"`。详见 [`references/workflow.md`](references/workflow.md)「标题原生序号」。
+7. **章节之间必须有 `<hr/>` 分割线。** 每个大节（H1、大 H2）结束后一条 hr，给文档"呼吸感"。
+8. **`ok:true` ≠ 成功。** 写操作后必看 `data.document.result` 和 `warnings`（degrade_code），别只看外层 `ok`——尤其 `block_replace`（曾返回 ok 实则 failed）。**文档页 `<title>` 块改不动**（degrade 2001），要改标题让 Evan 网页端手改。
+9. 所有 lark-cli 操作前先读 [`lark-shared`](../lark-shared/SKILL.md)（认证、`--as user`、高风险门禁）。
 
 ---
 
@@ -111,4 +128,5 @@ description: |
 - **lark-cli** + **lark-doc** skill — 飞书文档读写（block 级）
 - **lark-whiteboard** skill — 画板 DSL 底层
 - **feishu-whiteboard-draw** skill — 在文档里落地原生可编辑画板（`/feishu-whiteboard-draw`）
-- Read 工具 — 读 Obsidian ASR + 截图 / 课件
+- **lark-cli `docs +media-download`** — 把课件内嵌截图下到本地（authcode 远程图 Read 打不开，必须先下载）
+- Read 工具 — 读 Obsidian ASR + 本地课件截图 PNG

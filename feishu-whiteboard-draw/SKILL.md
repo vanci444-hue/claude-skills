@@ -67,19 +67,29 @@ npx -y @larksuite/whiteboard-cli@^0.2.11 -v
 - 模板起步：[`templates/mindmap.dsl.json`](templates/mindmap.dsl.json)。
 - 预览：`npx -y @larksuite/whiteboard-cli@^0.2.11 -i diagram.json -o diagram.png`，看文字是否在框内、无截断、连线无交叉。
 
-### Step 3 · 转 raw 并写入（覆盖式）
+### Step 3 · 转 raw → **合并文字（必做！）** → 写入（覆盖式）
+
+> 🔴 **铁律 4（实测 whiteboard-cli 0.2.11）：`--to openapi` 会把每个"形状自带 text"拆成「空 text 的 composite_shape + 独立 text_shape」**，直接写进飞书就是"框 + 浮在上面的字"（点框文字不跟着动；宽横条的浮字还会被底色盖住变空框）。**所以不能直接 pipe，必须先把 openapi 落盘、后处理合并、再写入。**
+
 ```bash
-npx -y @larksuite/whiteboard-cli@^0.2.11 -i diagram.json --to openapi --format json \
-  | lark-cli whiteboard +update --whiteboard-token <board_token> \
-      --source - --input_format raw --idempotent-token <时间戳> --as user
+# 1) 导出 openapi 到文件（不要直接 pipe）
+npx -y @larksuite/whiteboard-cli@^0.2.11 -i diagram.json --to openapi --format json > openapi.json
+# 2) 合并：把漂浮 text_shape 并回它底下的 composite_shape.text，删掉浮字
+#    用本 skill 自带脚本（先按你图里"含子节点的容器/外框/band"坐标改脚本顶部 CONTAINERS 锚点）
+node templates/merge-text-into-shapes.cjs openapi.json merged.json
+# 3) 写入合并后的 raw
+cat merged.json | lark-cli whiteboard +update --whiteboard-token <board_token> \
+      --source - --input_format raw --idempotent-token <时间戳> --as user --overwrite
 ```
+
+**合并逻辑**（脚本 [`templates/merge-text-into-shapes.cjs`](templates/merge-text-into-shapes.cjs)）：读 `openapi.json` 的 `data.result.nodes`；对每个 `text_shape T`，找同 `x`、同 `width`、且 `T.y` 落在某 `composite_shape C` 垂直范围内的 C → 把 `T.text` 整个拷进 `C.text`（保留 rich_text 双行样式），按角色覆盖对齐（含子节点的容器/外框/band 标题→ `vertical_align:top, horizontal_align:left`；普通框/横条→ `mid/center`），并删掉 T；匹配不到的 text_shape = 真正悬在空白处的 caption，保留。**脚本顶部 `CONTAINERS` 的 (x,y) 锚点需按当前图里"含子节点的容器/外框/band"实际坐标改。**
 
 ### Step 4 · 回查
 ```bash
 lark-cli whiteboard +query --whiteboard-token <token> --output_as raw --as user   # 看节点结构
 lark-cli whiteboard +query --whiteboard-token <token> --output_as image --output ./verify.png --as user
 ```
-**自检关键**：raw 里应该是 `composite_shape` 携带 `text`，**`text_shape` 独立元素数量为 0**。若出现独立 text_shape，说明 DSL 用了"frame 套 text"的错误写法，回 Step 2 改成"形状自带 text"。
+**自检关键（看 raw，别只看渲染图——浮字渲染出来也"看着对"）**：业务框应**全部 `composite_shape.text.text` 非空**；独立 `text_shape` 只应剩"真正悬在空白处的说明 caption"（如区块大标题、注释小字），数量等于这些 caption 数。若业务框的 composite 是空 text、文字都散在独立 text_shape 里 → Step 3 的合并没做或没生效，回去修 post.cjs。
 
 ---
 
@@ -88,7 +98,8 @@ lark-cli whiteboard +query --whiteboard-token <token> --output_as image --output
 |---|---|---|
 | 插入命令返回的 block_id 后续用不了 | 返回的是临时假 id | 用 `docs +fetch --detail with-ids` 取真实 id/token |
 | 空白画板插不进（1011） | 飞书判"无变更" | 先插最小 mermaid 画板拿 token，再 DSL 重绘 |
-| 文字浮在框上、不可一起编辑 | 用了 frame+text 子节点 | 改成形状自带 `text`（铁律 1） |
+| 文字浮在框上、不可一起编辑 | ①用了 frame+text 子节点；②`--to openapi` 把形状 text 拆成独立 text_shape | ①改成形状自带 `text`（铁律 1）；②Step 3 必做合并后处理（铁律 4） |
+| 宽横条/band 写进去是空框、字不见了 | openapi 拆出的浮字被横条底色盖住 | Step 3 合并后处理把字绑回 composite（铁律 4） |
 | 文字被截断 | height 写死 | `height: "fit-content"` |
 | docx 里嵌 mermaid 不能上色/不支持 mindmap/classDef/`<br/>` | 飞书 docx-mermaid 渲染能力有限 | 走 DSL→raw 路线，别指望 docx-mermaid 控样式 |
 | SVG 画板看着对但不能拖/改 | SVG 是静态矢量图 | 要可编辑就走 DSL 原生节点，不要用 `<whiteboard type="svg">` |

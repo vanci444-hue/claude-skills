@@ -52,6 +52,7 @@ Turns a course **ASR transcript** (plus screenshots / slide captures) into a **F
 │   └── SKILL.md
 └── yh-course-notes/
     ├── SKILL.md
+    ├── command.md
     └── references/
 ```
 

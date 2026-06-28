@@ -8,6 +8,17 @@
 - 读 `lark-shared` skill（认证、`--as user`、exit 10 高风险门禁）。
 - 代理告警 `proxy detected` 是正常的，过滤即可（`| grep -v "proxy detected"`）。
 
+## 0.5 读课件截图（飞书文档内嵌图）
+飞书课件常常整篇是截图。**Read 工具打不开远程 `authcode` 图 URL，必须先下载到本地再 Read。**
+```bash
+# 1) 拿图 token（markdown 里给的是临时 authcode URL，不是 token；要 xml + with-ids）
+lark-cli docs +fetch --api-version v2 --doc "<课件URL>" --detail with-ids --doc-format xml --as user   # 找 <img token="…">
+# 2) 下载到本地（相对路径；不带扩展名会按 Content-Type 自动补全）
+lark-cli docs +media-download --token "<img_token>" --output ./kj_img1 --as user
+# 3) Read ./kj_img1.jpg|png 逐张视觉读取
+```
+- **课件会被事后补充 / 更新**：第一次抓可能是空或半成品（踩过：首抓时「关键概念」整块还是空的，后来才补全）。**定稿前重新 fetch 一次课件**，别用旧缓存。
+
 ## 1. 读已有笔记（补充场景）
 ```bash
 lark-cli docs +fetch --api-version v2 --doc "<URL>" --detail with-ids --doc-format xml
@@ -60,6 +71,10 @@ lark-cli docs +fetch --api-version v2 --doc "<URL>" --scope keyword \
 ```
 确认新块就位、位置对、原文未动。
 
+> **校验铁律：`ok:true` ≠ 成功。** 写操作（尤其 `block_replace`）的外层 `ok` 可能是 true，但 `data.document.result` 是 `failed`、`warnings` 里带 `degrade_code` —— **每次写完都看 `result` 和 `warnings`**，别只看 `ok`。
+> 已知改不动的：**文档页 `<title>` 块**（`block_replace` 报 `degrade_code=2001 block not found`）—— 标题让 Evan 在网页端手改，lark-cli 目前也没有 wiki 节点重命名命令。
+> 反过来：含 `<table>` 的多块片段**直接 `block_insert_after` 通常能成**（本系列已验证）；先直接插，真报 `Nesting still failed` 再走第 3 节两步法。
+
 ---
 
 ## 新建笔记骨架（非补充场景）
@@ -67,6 +82,18 @@ lark-cli docs +fetch --api-version v2 --doc "<URL>" --scope keyword \
 lark-cli docs +create --api-version v2 --content '<title>标题</title><h1>第一大节</h1>...'
 ```
 或先建空文档 / 在知识库节点下建，再用 `append` + `block_insert_after` 逐块填。具体建在哪个 wiki 节点、用 docx 还是 wiki，按 Evan 当次指示。
+
+---
+
+## 标题原生序号（飞书自动编号，对齐 Evan 课件）
+
+Evan 的课件笔记标题走**飞书原生自动序号**（显示 1 / 1.1 / 1.1.1），不是手敲到标题文字里。机制 = heading 块带 `seq` + `seq-level` 属性：
+- **首个 H1**：`<h1 seq="1" seq-level="auto">…</h1>`（起始计数）
+- **其余所有标题**：`<h... seq="auto" seq-level="auto">…</h...>`
+- 标题文字里**不要再手敲「一、/ 1.1」**，由飞书自动渲染。
+- 层级要连续 **H1→H2→H3**（别跳级，否则自动编号会怪）。子节是二级就用 H2，不要用 H3。
+
+新建时直接在每个 heading 标签写上 `seq`/`seq-level`。已有笔记补编号：fetch 拿 heading block_id，逐个 `block_replace` 成带 `seq` 属性的新标签（`block_replace` 可同时改级别，如 H3→H2）。参样板：`线下课｜基础 RAG`（token `W5SCws3ssinz2NkFALPcyMQVnEf`）。
 
 ---
 
